@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31321.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RdfTool", "SpchTool\RdfTool.csproj", "{1B90681A-CA08-4243-98E6-F8A29BF1EEBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B90681A-CA08-4243-98E6-F8A29BF1EEBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B90681A-CA08-4243-98E6-F8A29BF1EEBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B90681A-CA08-4243-98E6-F8A29BF1EEBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B90681A-CA08-4243-98E6-F8A29BF1EEBC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {19436112-6564-4AB0-BFE4-257512DDF9CD}
+	EndGlobalSection
+EndGlobal
