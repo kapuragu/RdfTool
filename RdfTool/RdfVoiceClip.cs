@@ -8,7 +8,7 @@ namespace RdfTool
 {
     public class RdfVoiceClip
     {
-        public FnvHash VoiceId { get; set; }
+        public FnvHash VoiceId { get; set; } //TODO: could be a variationset name, which could be a strcode32
         public byte u00 { get; set; }
         public byte u01 { get; set; }
         public byte VoiceTypeIndex { get; set; }

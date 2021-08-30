@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DumpInfo.cs" />
     <Compile Include="RdfVariationSet.cs" />
     <Compile Include="RdfOptionalSet.cs" />
     <Compile Include="FnvHash.cs" />
