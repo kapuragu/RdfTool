@@ -39,9 +39,11 @@ namespace RdfTool
         {
             VariationSetName = new FoxHash();
             VariationSetName.ReadXml(reader, "variationSetName");
+            bool doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("variationSet");
-            while (2 > 1)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -51,10 +53,10 @@ namespace RdfTool
                         Console.WriteLine($"    {voiceClip.VoiceId.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
+                        doNodeLoop = false;
                         reader.Read();
                         return;
                 }
-            }
         }
 
         public void WriteXml(XmlWriter writer)

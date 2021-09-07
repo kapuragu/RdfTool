@@ -30,12 +30,14 @@ namespace RdfTool
             {
                 "rdf_label_dictionary.txt",
                 "rdf_optionalset_dictionary.txt",
+                "rdf_user_dictionary.txt",
             };
             List<string> fnvDictionaryNames = new List<string>
             {
                 "rdf_dialogueevent_dictionary.txt",
                 "rdf_voicetype_dictionary.txt",
                 "rdf_voiceid_dictionary.txt",
+                "rdf_user_dictionary.txt",
             };
 
             List<string> strCodeDictionaries = new List<string>();
@@ -79,29 +81,29 @@ namespace RdfTool
                 }//foreach args
             }//args
             Console.WriteLine("Processing file list");
-            foreach (var spchPath in files)
+            foreach (var rdfPath in files)
             {
-                if (File.Exists(spchPath))
+                if (File.Exists(rdfPath))
                 {
-                    Console.WriteLine(spchPath);
+                    Console.WriteLine(rdfPath);
                     // Read input file
-                    string fileExtension = Path.GetExtension(spchPath);
+                    string fileExtension = Path.GetExtension(rdfPath);
                     if (fileExtension.Equals(".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        RdfFile spch = ReadFromXml(spchPath);
-                        WriteToBinary(spch, Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(spchPath)) + ".rdf");
-                        CollectUserStrings(spch, hashManager, UserStrings);
+                        RdfFile rdf = ReadFromXml(rdfPath);
+                        WriteToBinary(rdf, Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(rdfPath)) + ".rdf");
+                        CollectUserStrings(rdf, hashManager, UserStrings);
                     }
                     else if (fileExtension.Equals(".rdf", StringComparison.OrdinalIgnoreCase))
                     {
-                        RdfFile spch = ReadFromBinary(spchPath, hashManager);
+                        RdfFile rdf = ReadFromBinary(rdfPath, hashManager);
                         if (!runSettings.outputHashes)
                         {
-                            WriteToXml(spch, Path.GetFileNameWithoutExtension(spchPath) + ".rdf.xml");
+                            WriteToXml(rdf, Path.GetFileNameWithoutExtension(rdfPath) + ".rdf.xml");
                         }
                         else
                         {
-                            Dump.DumpInfo.OutputHashes(runSettings.gameId, fileType, runSettings.outputPath, spchPath, spch);
+                            Dump.DumpInfo.OutputHashes(runSettings.gameId, fileType, runSettings.outputPath, rdfPath, rdf);
                         }//if outputhashes
                     }
                     else
@@ -315,7 +317,7 @@ namespace RdfTool
         public static void WriteUserStringsToFile(List<string> UserStrings)
         {
             UserStrings.Sort(); //Sort alphabetically for neatness
-            var UserDictionary = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/" + "spch_user_dictionary.txt";
+            var UserDictionary = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/" + "rdf_user_dictionary.txt";
             foreach (var userString in UserStrings)
                 using (StreamWriter file = new StreamWriter(UserDictionary, append: true))
                     file.WriteLine(userString); //Write them into the user dictionary

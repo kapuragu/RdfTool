@@ -10,10 +10,8 @@ Set_f5000_rtrg0030
 Set_f5000_rtrg0040
 Set_s0020_oprg0010
 Set_s0020_oprg1010
-Set_s0020_oprg1030
 Set_s0020_oprg2010
 Set_s0020_oprg3010
-Set_s0020_oprg3020
 Set_s0020_oprg3030
 Set_s0020_oprg4010
 Set_s0020_oprg5010
@@ -46,12 +44,6 @@ Set_s0044_oprg0010
 Set_s0044_oprg0020
 Set_s0044_oprg0030
 Set_s0044_oprg0100
-Set_s0044_oprg1000
-Set_s0044_oprg2000
-Set_s0044_oprg2500
-Set_s0044_oprg3000
-Set_s0044_oprg4000
-Set_s0044_oprg5000
 Set_s0045_oprg0010
 Set_s0045_oprg0020
 Set_s0045_oprg0030
@@ -59,7 +51,6 @@ Set_s0045_oprg0040
 Set_s0045_oprg0050
 Set_s0045_oprg0060
 Set_s0045_oprg0070
-Set_s0045_oprg4020
 Set_s0050_oprg1000
 Set_s0050_oprg2000
 Set_s0050_oprg3000
@@ -132,7 +123,6 @@ Set_s0086_oprg0030
 Set_s0086_oprg0040
 Set_s0086_oprg0050
 Set_s0086_oprg0060
-Set_s0086_oprg0070
 Set_s0090_oprg0010
 Set_s0090_oprg0020
 Set_s0090_oprg0030
@@ -170,8 +160,6 @@ Set_s0120_oprg0010
 Set_s0120_oprg0020
 Set_s0120_oprg0030
 Set_s0120_oprg0040
-Set_s0120_oprg0050
-Set_s0120_oprg0060
 Set_s0121_oprg0000
 Set_s0121_oprg0010
 Set_s0121_oprg0020

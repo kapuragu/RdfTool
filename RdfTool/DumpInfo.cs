@@ -42,7 +42,7 @@ namespace Dump
                     }
                     else
                     {
-                        hashSets["VoiceId"].Add(voiceClip.VoiceId.HashValue.ToString());
+                    hashSets["VoiceId"].Add(voiceClip.VoiceId.HashValue.ToString());
                     }
                 }
             }//foreach labels

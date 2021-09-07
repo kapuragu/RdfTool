@@ -98,25 +98,15 @@ namespace RdfTool
             writer.Write((short)VariationSets.Count);
             writer.Write((byte)VoiceTypes.Count);
             foreach (FnvHash dialogueEvent in DialogueEvents)
-            {
                 dialogueEvent.Write(writer);
-            }
             foreach (FnvHash voiceType in VoiceTypes)
-            {
                 voiceType.Write(writer);
-            }
             foreach (RdfLabel label in Labels)
-            {
                 label.Write(writer);
-            }
             foreach (RdfOptionalSet set in OptionalSets)
-            {
                 set.Write(writer);
-            }
             foreach (RdfVariationSet set in VariationSets)
-            {
                 set.Write(writer);
-            }
             //From FMS, thx Bob!
             if (writer.BaseStream.Position % 0x10 != 0)
                 writer.Write(new byte[(int)(0x10 - writer.BaseStream.Position % 0x10)]);
@@ -128,15 +118,14 @@ namespace RdfTool
             reader.Read();
 
             if ((Version)short.Parse(reader["version"]) != Version.TPP)
-            {
                 throw new ArgumentOutOfRangeException();
-            }
             reader.ReadStartElement("rdf");
 
+            bool doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("dialogueEvents");
-            var loop = 0;
-            while (loop==0)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -147,16 +136,16 @@ namespace RdfTool
                         Console.WriteLine($"{dialogueEvent.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        loop = 1;
+                        doNodeLoop = false;
                         reader.Read();
                         break;
                 }
-            }
 
+            doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("voiceTypes");
-            loop = 0;
-            while (loop == 0)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -167,16 +156,16 @@ namespace RdfTool
                         Console.WriteLine($"{voiceType.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        loop = 1;
+                        doNodeLoop = false;
                         reader.Read();
                         break;
                 }
-            }
 
+            doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("labels");
-            loop = 0;
-            while (loop == 0)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -186,16 +175,16 @@ namespace RdfTool
                         Console.WriteLine($"{label.LabelName.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        loop = 1;
+                        doNodeLoop = false;
                         reader.Read();
                         break;
                 }
-            }
 
+            doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("optionalSets");
-            loop = 0;
-            while (loop == 0)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -205,16 +194,16 @@ namespace RdfTool
                         Console.WriteLine($"{optSet.OptionalSetName.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        loop = 1;
+                        doNodeLoop = false;
                         reader.Read();
                         break;
                 }
-            }
 
+            doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
             reader.ReadStartElement("variationSets");
-            loop = 0;
-            while (loop == 0)
-            {
+            while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
@@ -224,11 +213,10 @@ namespace RdfTool
                         Console.WriteLine($"{varSet.VariationSetName.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        loop = 1;
+                        doNodeLoop = false;
                         reader.Read();
                         break;
                 }
-            }
         }
         public void WriteXml(XmlWriter writer)
         {

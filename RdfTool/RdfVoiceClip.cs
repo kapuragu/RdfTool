@@ -9,12 +9,12 @@ namespace RdfTool
     public class RdfVoiceClip
     {
         public FnvHash VoiceId { get; set; } //TODO: could be a variationset name, which could be a strcode32
-        public byte u00 { get; set; }
-        public byte u01 { get; set; }
-        public byte VoiceTypeIndex { get; set; }
-        public byte u11 { get; set; }
-        public byte IsVariationSet { get; set; }
-        public byte u21 { get; set; }
+        public byte u00 { get; set; } //max 0x0F 15
+        public byte u01 { get; set; } //max 0x0F 15
+        public byte VoiceTypeIndex { get; set; } //max 0x0F 15 - 15 is also INVALID/nil
+        public byte u11 { get; set; } //max 0x0F 15
+        public byte IsVariationSet { get; set; } //max 0x0F 15 - only observed in vanilla to be a 0/1 bool
+        public byte u21 { get; set; } //max 0x0F 15
         public void Read(BinaryReader reader, HashManager hashManager, HashIdentifiedDelegate hashIdentifiedCallback)
         {
             VoiceId = new FnvHash(); //TODO: could be a variationset name, which could be a strcode32
@@ -24,12 +24,12 @@ namespace RdfTool
             byte[] flagbytes = reader.ReadBytes(3);
             Console.WriteLine($"        flags: {flagbytes[0]} {flagbytes[1]} {flagbytes[2]}");
 
-            u00 = (byte)(flagbytes[0] & 0x0F);
-            u01 = (byte)(flagbytes[0] >> 4);
-            VoiceTypeIndex = (byte)(flagbytes[1] & 0x0F);
-            u11 = (byte)(flagbytes[1] >> 4);
-            IsVariationSet = (byte)(flagbytes[2] & 0x0F);
-            u21 = (byte)(flagbytes[2] >> 4);
+            u00 = (byte)(flagbytes[0] & 0x0F); //max 0x0F 15
+            u01 = (byte)(flagbytes[0] >> 4);  //max 0x0F 15
+            VoiceTypeIndex = (byte)(flagbytes[1] & 0x0F);  //max 0x0F 15 - 15 is also INVALID/nil
+            u11 = (byte)(flagbytes[1] >> 4);  //max 0x0F 15
+            IsVariationSet = (byte)(flagbytes[2] & 0x0F);  //max 0x0F 15 - only observed in vanilla to be a bool
+            u21 = (byte)(flagbytes[2] >> 4);  //max 0x0F 15
             Console.WriteLine($"         u00: {u00} u01: {u01}");
             Console.WriteLine($"         voiceTypeIndex: {VoiceTypeIndex} u11: {u11}");
             Console.WriteLine($"         isVariationSet: {IsVariationSet} u21: {u21}");
