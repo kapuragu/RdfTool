@@ -10,9 +10,9 @@ namespace RdfTool
     {
         public FnvHash VoiceId { get; set; } //TODO: could be a variationset name, which could be a strcode32
         public byte u00 { get; set; } //max 0x0F 15
-        public byte u01 { get; set; } //max 0x0F 15
+        public byte u01 { get; set; } //max 0x0F 15 - 15 is also INVALID/nil
         public byte VoiceTypeIndex { get; set; } //max 0x0F 15 - 15 is also INVALID/nil
-        public byte u11 { get; set; } //max 0x0F 15
+        public byte u11 { get; set; } //max 0x0F 15 - 15 is also INVALID/nil
         public byte IsVariationSet { get; set; } //max 0x0F 15 - only observed in vanilla to be a 0/1 bool
         public byte u21 { get; set; } //max 0x0F 15
         public void Read(BinaryReader reader, HashManager hashManager, HashIdentifiedDelegate hashIdentifiedCallback)
