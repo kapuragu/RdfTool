@@ -121,7 +121,7 @@ namespace RdfTool
                 throw new ArgumentOutOfRangeException();
             reader.ReadStartElement("rdf");
 
-            bool doNodeLoop = true;
+            bool doNodeLoop = true;/*
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
             reader.ReadStartElement("dialogueEvents");
@@ -161,7 +161,7 @@ namespace RdfTool
                         break;
                 }
 
-            doNodeLoop = true;
+            doNodeLoop = true;*/
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
             reader.ReadStartElement("labels");
@@ -170,7 +170,7 @@ namespace RdfTool
                 {
                     case XmlNodeType.Element:
                         RdfLabel label = new RdfLabel();
-                        label.ReadXml(reader);
+                        label.ReadXml(reader, DialogueEvents, VoiceTypes);
                         Labels.Add(label);
                         Console.WriteLine($"{label.LabelName.HashValue}");
                         continue;
@@ -208,7 +208,7 @@ namespace RdfTool
                 {
                     case XmlNodeType.Element:
                         RdfVariationSet varSet = new RdfVariationSet();
-                        varSet.ReadXml(reader);
+                        varSet.ReadXml(reader, DialogueEvents, VoiceTypes);
                         VariationSets.Add(varSet);
                         Console.WriteLine($"{varSet.VariationSetName.HashValue}");
                         continue;
@@ -223,7 +223,7 @@ namespace RdfTool
             writer.WriteStartDocument();
             writer.WriteStartElement("rdf");
             writer.WriteAttributeString("version", 3.ToString());
-
+            /*
             writer.WriteStartElement("dialogueEvents");
             foreach (FnvHash dialogueEvent in DialogueEvents)
             {
@@ -241,11 +241,11 @@ namespace RdfTool
                 writer.WriteEndElement();
             }
             writer.WriteEndElement();
-
+            */
             writer.WriteStartElement("labels");
             foreach (RdfLabel label in Labels)
             {
-                label.WriteXml(writer);
+                label.WriteXml(writer, DialogueEvents, VoiceTypes);
             }
             writer.WriteEndElement();
 
@@ -259,7 +259,7 @@ namespace RdfTool
             writer.WriteStartElement("variationSets");
             foreach (RdfVariationSet set in VariationSets)
             {
-                set.WriteXml(writer);
+                set.WriteXml(writer, DialogueEvents, VoiceTypes);
             }
             writer.WriteEndElement();
 

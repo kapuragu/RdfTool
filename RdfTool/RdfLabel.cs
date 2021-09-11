@@ -89,7 +89,7 @@ namespace RdfTool
                 voiceClip.Write(writer);
             }
         }
-        public void ReadXml(XmlReader reader)
+        public void ReadXml(XmlReader reader, List<FnvHash> dialogueEvents, List<FnvHash> voiceTypes)
         {
             LabelName = new FoxHash();
             LabelName.ReadXml(reader, "labelName");
@@ -119,7 +119,7 @@ namespace RdfTool
                 {
                     case XmlNodeType.Element:
                         RdfVoiceClip voiceClip = new RdfVoiceClip();
-                        voiceClip.ReadXml(reader);
+                        voiceClip.ReadXml(reader, dialogueEvents, voiceTypes);
                         VoiceClips.Add(voiceClip);
                         Console.WriteLine($"    {voiceClip.VoiceId.HashValue}");
                         continue;
@@ -129,7 +129,7 @@ namespace RdfTool
                         return;
                 }
         }
-        public void WriteXml(XmlWriter writer)
+        public void WriteXml(XmlWriter writer, List<FnvHash> dialogueEvents, List<FnvHash> voiceTypes)
         {
             writer.WriteStartElement("label");
             LabelName.WriteXml(writer, "labelName");
@@ -146,7 +146,7 @@ namespace RdfTool
             Console.WriteLine($"Label name: {LabelName.StringLiteral}");
             foreach (RdfVoiceClip voiceClip in VoiceClips)
             {
-                voiceClip.WriteXml(writer);
+                voiceClip.WriteXml(writer, dialogueEvents, voiceTypes);
             }
             writer.WriteEndElement();
         }

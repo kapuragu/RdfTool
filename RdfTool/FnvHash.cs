@@ -29,7 +29,7 @@ namespace RdfTool
         }
         public void ReadXml(XmlReader reader, string label)
         {
-            string value = reader[label];
+            string value = reader[label].ToLower();
 
             if (uint.TryParse(value, out uint maybeHash))
             {
@@ -45,7 +45,7 @@ namespace RdfTool
         {
             if (IsStringKnown)
             {
-                writer.WriteAttributeString(label, StringLiteral);
+                writer.WriteAttributeString(label, StringLiteral.ToLower());
             }
             else
             {
