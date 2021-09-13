@@ -50,12 +50,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DumpInfo.cs" />
+    <Compile Include="RdfLabelGZ.cs" />
+    <Compile Include="RdfOptionalSetGZ.cs" />
     <Compile Include="RdfVariationSet.cs" />
     <Compile Include="RdfOptionalSet.cs" />
     <Compile Include="FnvHash.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FoxHash.cs" />
     <Compile Include="HashManager.cs" />
+    <Compile Include="RdfVoiceClipGZ.cs" />
     <Compile Include="RdfVoiceClip.cs" />
     <Compile Include="RdfLabel.cs" />
     <Compile Include="RdfFile.cs" />

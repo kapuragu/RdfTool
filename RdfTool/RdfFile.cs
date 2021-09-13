@@ -20,75 +20,159 @@ namespace RdfTool
         public List<RdfLabel> Labels = new List<RdfLabel>();
         public List<RdfOptionalSet> OptionalSets = new List<RdfOptionalSet>();
         public List<RdfVariationSet> VariationSets = new List<RdfVariationSet>();
+
+        public List<RdfLabelGZ> LabelsGZ = new List<RdfLabelGZ>();
+        public List<RdfOptionalSetGZ> OptionalSetsGZ = new List<RdfOptionalSetGZ>();
         public void Read(BinaryReader reader, HashManager hashManager)
         {
             // Read header
             byte version = reader.ReadByte();
 
-            if (version == (byte)Version.GZ) //if gz version
-            {
-                Console.WriteLine("Version 1 not yet supported!!");
-                throw new ArgumentOutOfRangeException();
-            }
-            else if (version != (byte)Version.TPP)
-            {
+            if (version != (byte)Version.TPP && version != (byte)Version.GZ)
                 Console.WriteLine("Incorrect version!! Not an .rdf file??");
-            };
+
             if (version == (byte)Version.TPP)
+                ReadTPP(reader, hashManager);
+            else if (version==(byte)Version.GZ)
+                ReadGZ(reader, hashManager);
+        }
+        public void ReadTPP(BinaryReader reader, HashManager hashManager)
+        {
+            byte dialogueEventCount = reader.ReadByte();
+
+            ushort labelCount = reader.ReadUInt16();
+            ushort optionalSetCount = reader.ReadUInt16();
+            ushort variationSetCount = reader.ReadUInt16();
+
+            byte voiceTypesCount = reader.ReadByte();
+
+            Console.WriteLine($"Dialogue events count: {dialogueEventCount}");
+            Console.WriteLine($"Labels count: {labelCount}");
+            Console.WriteLine($"Optional sets count: {optionalSetCount}");
+            Console.WriteLine($"Variation sets count: {variationSetCount}");
+            Console.WriteLine($"Voice types count: {voiceTypesCount}");
+
+            for (int i = 0; i < dialogueEventCount; i++)
             {
-                byte dialogueEventCount = reader.ReadByte();
+                FnvHash dialogueEvent = new FnvHash();
+                dialogueEvent.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
+                Console.WriteLine($"Dialogue event: {dialogueEvent.StringLiteral}");
+                DialogueEvents.Add(dialogueEvent);
+            }
 
-                ushort labelCount = reader.ReadUInt16();
-                ushort optionalSetCount = reader.ReadUInt16();
-                ushort variationSetCount = reader.ReadUInt16();
+            for (int i = 0; i < voiceTypesCount; i++)
+            {
+                FnvHash voiceType = new FnvHash();
+                voiceType.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
+                Console.WriteLine($"Voice type: {voiceType.StringLiteral}");
+                VoiceTypes.Add(voiceType);
+            }
 
-                byte voiceTypesCount = reader.ReadByte();
+            for (int i = 0; i < labelCount; i++)
+            {
+                RdfLabel label = new RdfLabel();
+                label.Read(reader, hashManager, hashManager.OnHashIdentified);
+                Labels.Add(label);
+            }
 
-                Console.WriteLine($"Dialogue events count: {dialogueEventCount}");
-                Console.WriteLine($"Labels count: {labelCount}");
-                Console.WriteLine($"Optional sets count: {optionalSetCount}");
-                Console.WriteLine($"Variation sets count: {variationSetCount}");
-                Console.WriteLine($"Voice types count: {voiceTypesCount}");
+            for (int i = 0; i < optionalSetCount; i++)
+            {
+                RdfOptionalSet set = new RdfOptionalSet();
+                set.Read(reader, hashManager, hashManager.OnHashIdentified);
+                OptionalSets.Add(set);
+            }
 
-                for (int i = 0; i < dialogueEventCount; i++) 
-                {
-                    FnvHash dialogueEvent = new FnvHash();
-                    dialogueEvent.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
-                    Console.WriteLine($"Dialogue event: {dialogueEvent.StringLiteral}");
-                    DialogueEvents.Add(dialogueEvent);
-                }
-
-                for (int i = 0; i < voiceTypesCount; i++)
-                {
-                    FnvHash voiceType = new FnvHash();
-                    voiceType.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
-                    Console.WriteLine($"Voice type: {voiceType.StringLiteral}");
-                    VoiceTypes.Add(voiceType);
-                }
-
-                for (int i = 0; i < labelCount; i++)
-                {
-                    RdfLabel label = new RdfLabel();
-                    label.Read(reader, hashManager, hashManager.OnHashIdentified);
-                    Labels.Add(label);
-                }
-
-                for (int i = 0; i < optionalSetCount; i++)
-                {
-                    RdfOptionalSet set = new RdfOptionalSet();
-                    set.Read(reader, hashManager, hashManager.OnHashIdentified);
-                    OptionalSets.Add(set);
-                }
-
-                for (int i = 0; i < variationSetCount; i++)
-                {
-                    RdfVariationSet set = new RdfVariationSet();
-                    set.Read(reader, hashManager, hashManager.OnHashIdentified);
-                    VariationSets.Add(set);
-                }
+            for (int i = 0; i < variationSetCount; i++)
+            {
+                RdfVariationSet set = new RdfVariationSet();
+                set.Read(reader, hashManager, hashManager.OnHashIdentified);
+                VariationSets.Add(set);
             }
         }
+        public void ReadGZ(BinaryReader reader, HashManager hashManager)
+        {
+            reader.BaseStream.Position += 1;
+            short labelCount = reader.ReadInt16();
+            int offsetToEndSection = reader.ReadInt32();
+
+            List<int> offsets = new List<int>();
+
+            for (int i = 0; i < labelCount; i++)
+            {
+                RdfLabelGZ label = new RdfLabelGZ();
+                LabelsGZ.Add(label);
+
+                FoxHash labelName = new FoxHash();
+                labelName.Read(reader, hashManager.StrCode32LookupTable, hashManager.OnHashIdentified);
+                label.LabelName = labelName;
+
+                offsets.Add(reader.ReadInt32());
+            }
+
+            for (int i = 0; i < labelCount; i++)
+            {
+                LabelsGZ[i].Read(reader, hashManager, hashManager.OnHashIdentified);
+            }
+
+            var optionalSetCount = reader.ReadByte();
+            reader.BaseStream.Position += 3;
+
+            List<int> offsetsSets = new List<int>();
+
+            for (int i = 0; i < optionalSetCount; i++)
+            {
+                RdfOptionalSetGZ label = new RdfOptionalSetGZ();
+                OptionalSetsGZ.Add(label);
+
+                FoxHash labelName = new FoxHash();
+                labelName.Read(reader, hashManager.StrCode32LookupTable, hashManager.OnHashIdentified);
+                label.OptionalSetName = labelName;
+
+                offsets.Add(reader.ReadInt32());
+            }
+
+            for (int i = 0; i < optionalSetCount; i++)
+            {
+                var entryCount = reader.ReadInt16();
+                reader.BaseStream.Position += 2;
+                for (int j = 0; j < entryCount; j++)
+                {
+                    var offsetToLabel = reader.ReadInt32();
+                    if (offsets.Contains(offsetToLabel))
+                    {
+                        var labelIndex = offsets.IndexOf(offsetToLabel);
+                        OptionalSetsGZ[i].LabelNames.Add(LabelsGZ[labelIndex].LabelName);
+                    }
+                }
+            }
+
+        }
         public void Write(BinaryWriter writer)
+        {
+            if (LabelsGZ.Count == 0 && OptionalSetsGZ.Count == 0)
+                WriteTPP(writer);
+            else
+                WriteGZ(writer);
+
+        }
+        public void WriteGZ(BinaryWriter writer)
+        {
+            writer.Write((byte)1);
+            writer.Write((short)LabelsGZ.Count);
+            var labelsEndOffsetValueOffset = writer.BaseStream.Position;
+            writer.Write(0); //offset to labels end
+            List<int> offsetsToLabels = new List<int>();
+            foreach (RdfLabelGZ label in LabelsGZ)
+            {
+                int ind = LabelsGZ.IndexOf(label);
+                label.LabelName.Write(writer);
+                offsetsToLabels[ind] = (int)writer.BaseStream.Position;
+                writer.Write(0); //offset to label start
+            }
+            foreach (RdfLabelGZ label in LabelsGZ)
+                label.Write(writer);
+        }
+        public void WriteTPP(BinaryWriter writer)
         {
             // Write header
             writer.Write((byte)3);
@@ -222,6 +306,29 @@ namespace RdfTool
         {
             writer.WriteStartDocument();
             writer.WriteStartElement("rdf");
+            if (LabelsGZ.Count == 0 && OptionalSetsGZ.Count == 0)
+                WriteXmlTPP(writer);
+            else
+                WriteXmlGZ(writer);
+        }
+        public void WriteXmlGZ(XmlWriter writer)
+        {
+            writer.WriteAttributeString("version", 1.ToString());
+            writer.WriteStartElement("labels");
+            foreach (RdfLabelGZ label in LabelsGZ)
+            {
+                label.WriteXml(writer, DialogueEvents, VoiceTypes);
+            }
+            writer.WriteEndElement();
+            writer.WriteStartElement("optionalSets");
+            foreach (RdfOptionalSetGZ set in OptionalSetsGZ)
+            {
+                set.WriteXml(writer);
+            }
+            writer.WriteEndElement();
+        }
+        public void WriteXmlTPP(XmlWriter writer)
+        {
             writer.WriteAttributeString("version", 3.ToString());
             /*
             writer.WriteStartElement("dialogueEvents");
