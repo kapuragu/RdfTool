@@ -43,9 +43,7 @@ namespace RdfTool
         public void ReadXml(XmlReader reader, List<FnvHash> dialogueEvents, List<FnvHash> voiceTypes)
         {
             VoiceId = new FnvHash();
-            VoiceId.ReadXml(reader, "voiceId");/*
-            DialogueEventIndex = sbyte.Parse(reader["dialogueEventIndex"]);
-            VoiceTypeIndex = sbyte.Parse(reader["voiceTypeIndex"]);*/
+            VoiceId.ReadXml(reader, "voiceId");
 
             FnvHash dialogueEvent = new FnvHash();
             dialogueEvent.ReadXml(reader, "dialogueEvent");

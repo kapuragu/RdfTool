@@ -158,19 +158,84 @@ namespace RdfTool
         public void WriteGZ(BinaryWriter writer)
         {
             writer.Write((byte)1);
+            writer.Write((byte)0);
             writer.Write((short)LabelsGZ.Count);
-            var labelsEndOffsetValueOffset = writer.BaseStream.Position;
+            long offsetToOptionalSection = (int)writer.BaseStream.Position;
             writer.Write(0); //offset to labels end
-            List<int> offsetsToLabels = new List<int>();
+            List<long> positionsOfLabelOffsets = new List<long>();
+            List<long> labelStartOffsts = new List<long>();
             foreach (RdfLabelGZ label in LabelsGZ)
             {
-                int ind = LabelsGZ.IndexOf(label);
+                positionsOfLabelOffsets.Add(writer.BaseStream.Position);
                 label.LabelName.Write(writer);
-                offsetsToLabels[ind] = (int)writer.BaseStream.Position;
                 writer.Write(0); //offset to label start
             }
             foreach (RdfLabelGZ label in LabelsGZ)
+            {
+                labelStartOffsts.Add(writer.BaseStream.Position);
                 label.Write(writer);
+            }
+
+            //Going back into the file for offsets: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            int startOfOptionalSection = (int)writer.BaseStream.Position;
+
+            writer.BaseStream.Position = offsetToOptionalSection;
+            writer.Write(startOfOptionalSection);
+
+            foreach (RdfLabelGZ label in LabelsGZ)
+            {
+                writer.BaseStream.Position = positionsOfLabelOffsets[LabelsGZ.IndexOf(label)]+4;
+                writer.Write((int)labelStartOffsts[LabelsGZ.IndexOf(label)]);
+            }
+
+            writer.BaseStream.Position = startOfOptionalSection;
+            //Returning to write the rest of the file: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+            writer.Write((byte)OptionalSetsGZ.Count);
+            writer.Write((byte)0);
+            writer.Write((short)0);
+            List<long> positionsOfSetOffsets = new List<long>();
+            List<long> setStartOffsets = new List<long>();
+            foreach (RdfOptionalSetGZ set in OptionalSetsGZ)
+            {
+                set.OptionalSetName.Write(writer);
+                positionsOfSetOffsets.Add(writer.BaseStream.Position);
+                writer.Write(0); //offset to label start
+            }
+            foreach (RdfOptionalSetGZ set in OptionalSetsGZ)
+            {
+                setStartOffsets.Add(writer.BaseStream.Position-startOfOptionalSection);
+                writer.Write((short)set.LabelNames.Count);
+                writer.Write((short)0);
+                foreach (FoxHash labelName in set.LabelNames)
+                {
+                    foreach (RdfLabelGZ label in LabelsGZ)
+                    {
+                        if (label.LabelName.HashValue==labelName.HashValue)
+                        {
+                            writer.Write((int)labelStartOffsts[LabelsGZ.IndexOf(label)]);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+            {
+                var zeroesToWrite = 0x10 - writer.BaseStream.Position % 0x10;
+                for (int i = 0; i < zeroesToWrite; i++)
+                {
+                    writer.Write((byte)0);
+                }
+            }
+
+            // Go back to write the offsets: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            foreach (RdfOptionalSetGZ set in OptionalSetsGZ)
+            {
+                writer.BaseStream.Position = positionsOfSetOffsets[OptionalSetsGZ.IndexOf(set)];
+                writer.Write((int)setStartOffsets[OptionalSetsGZ.IndexOf(set)]);
+            }
+            // Go back to write the offsets: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
         public void WriteTPP(BinaryWriter writer)
         {
@@ -201,23 +266,31 @@ namespace RdfTool
             reader.Read();
             reader.Read();
 
-            if ((Version)short.Parse(reader["version"]) != Version.TPP)
+            var version = (Version)short.Parse(reader["version"]);
+
+            if (version != Version.TPP && version != Version.GZ)
                 throw new ArgumentOutOfRangeException();
             reader.ReadStartElement("rdf");
 
-            bool doNodeLoop = true;/*
+            if (version == Version.TPP)
+                ReadXmlTPP(reader);
+            else if (version == Version.GZ)
+                ReadXmlGZ(reader);
+        }
+        public void ReadXmlGZ(XmlReader reader)
+        {
+            bool doNodeLoop = true;
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
-            reader.ReadStartElement("dialogueEvents");
+            reader.ReadStartElement("labels");
             while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
-                        FnvHash dialogueEvent = new FnvHash();
-                        dialogueEvent.ReadXml(reader, "dialogueEvent");
-                        DialogueEvents.Add(dialogueEvent);
-                        reader.ReadStartElement("dialogueEvent");
-                        Console.WriteLine($"{dialogueEvent.HashValue}");
+                        RdfLabelGZ label = new RdfLabelGZ();
+                        label.ReadXml(reader);
+                        LabelsGZ.Add(label);
+                        Console.WriteLine($"{label.LabelName.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
                         doNodeLoop = false;
@@ -228,16 +301,15 @@ namespace RdfTool
             doNodeLoop = true;
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
-            reader.ReadStartElement("voiceTypes");
+            reader.ReadStartElement("optionalSets");
             while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
-                        FnvHash voiceType = new FnvHash();
-                        voiceType.ReadXml(reader, "voiceType");
-                        VoiceTypes.Add(voiceType);
-                        reader.ReadStartElement("voiceType");
-                        Console.WriteLine($"{voiceType.HashValue}");
+                        RdfOptionalSetGZ optSet = new RdfOptionalSetGZ();
+                        optSet.ReadXml(reader);
+                        OptionalSetsGZ.Add(optSet);
+                        Console.WriteLine($"{optSet.OptionalSetName.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
                         doNodeLoop = false;
@@ -245,7 +317,10 @@ namespace RdfTool
                         break;
                 }
 
-            doNodeLoop = true;*/
+        }
+        public void ReadXmlTPP(XmlReader reader)
+        {
+            bool doNodeLoop = true;
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
             reader.ReadStartElement("labels");
@@ -317,7 +392,7 @@ namespace RdfTool
             writer.WriteStartElement("labels");
             foreach (RdfLabelGZ label in LabelsGZ)
             {
-                label.WriteXml(writer, DialogueEvents, VoiceTypes);
+                label.WriteXml(writer);
             }
             writer.WriteEndElement();
             writer.WriteStartElement("optionalSets");
@@ -330,25 +405,6 @@ namespace RdfTool
         public void WriteXmlTPP(XmlWriter writer)
         {
             writer.WriteAttributeString("version", 3.ToString());
-            /*
-            writer.WriteStartElement("dialogueEvents");
-            foreach (FnvHash dialogueEvent in DialogueEvents)
-            {
-                writer.WriteStartElement("dialogueEvent");
-                dialogueEvent.WriteXml(writer, "dialogueEvent");
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("voiceTypes");
-            foreach (FnvHash voiceType in VoiceTypes)
-            {
-                writer.WriteStartElement("voiceType");
-                voiceType.WriteXml(writer, "voiceType");
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-            */
             writer.WriteStartElement("labels");
             foreach (RdfLabel label in Labels)
             {

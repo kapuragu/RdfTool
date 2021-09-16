@@ -13,6 +13,27 @@ namespace RdfTool
         public List<FoxHash> LabelNames = new List<FoxHash>();
         public void ReadXml(XmlReader reader)
         {
+            OptionalSetName = new FoxHash();
+            OptionalSetName.ReadXml(reader, "optionalSetName");
+            bool doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
+            reader.ReadStartElement("optionalSet");
+            while (doNodeLoop)
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        FoxHash label = new FoxHash();
+                        label.ReadXml(reader, "labelName");
+                        LabelNames.Add(label);
+                        reader.ReadStartElement("label");
+                        Console.WriteLine($"    {label.HashValue}");
+                        continue;
+                    case XmlNodeType.EndElement:
+                        doNodeLoop = false;
+                        reader.Read();
+                        return;
+                }
         }
 
         public void WriteXml(XmlWriter writer)

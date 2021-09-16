@@ -48,6 +48,7 @@ namespace RdfTool
             writer.Write(u0);
             writer.Write(u1);
             writer.Write(unk2);
+            writer.Write((short)0);
             writer.Write(unk3);
             writer.Write(u4);
             writer.Write(u5);
@@ -59,7 +60,40 @@ namespace RdfTool
             foreach (RdfVoiceClipGZ voiceClip in VoiceClips)
                 voiceClip.Write(writer);
         }
-        public void WriteXml(XmlWriter writer, List<FnvHash> dialogueEvents, List<FnvHash> voiceTypes)
+        public void ReadXml(XmlReader reader)
+        {
+            LabelName = new FoxHash();
+            LabelName.ReadXml(reader, "labelName");
+            u0 = byte.Parse(reader["u0"]);
+            u1 = byte.Parse(reader["u1"]);
+            unk2 = ushort.Parse(reader["unk2"]);
+            unk3 = ushort.Parse(reader["unk3"]);
+            u4 = byte.Parse(reader["u4"]);
+            u5 = byte.Parse(reader["u5"]);
+            u6 = byte.Parse(reader["u6"]);
+            u8 = byte.Parse(reader["u8"]);
+            u9 = byte.Parse(reader["u9"]);
+
+            bool doNodeLoop = true;
+            if (reader.IsEmptyElement)
+                doNodeLoop = false;
+            reader.ReadStartElement("label");
+            while (doNodeLoop)
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        RdfVoiceClipGZ voiceClip = new RdfVoiceClipGZ();
+                        voiceClip.ReadXml(reader);
+                        VoiceClips.Add(voiceClip);
+                        Console.WriteLine($"    {voiceClip.VoiceId.HashValue}");
+                        continue;
+                    case XmlNodeType.EndElement:
+                        doNodeLoop = false;
+                        reader.Read();
+                        return;
+                }
+        }
+        public void WriteXml(XmlWriter writer)
         {
             writer.WriteStartElement("label");
             LabelName.WriteXml(writer, "labelName");
@@ -74,7 +108,7 @@ namespace RdfTool
             writer.WriteAttributeString("u9", u9.ToString(CultureInfo.InvariantCulture));
             foreach (RdfVoiceClipGZ voiceClip in VoiceClips)
             {
-                voiceClip.WriteXml(writer, dialogueEvents, voiceTypes);
+                voiceClip.WriteXml(writer);
             }
             writer.WriteEndElement();
         }

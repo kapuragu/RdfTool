@@ -35,7 +35,21 @@ namespace RdfTool
             writer.Write(u1);
             writer.Write((short)0);
         }
-        public void WriteXml(XmlWriter writer, List<FnvHash> dialogueEvents, List<FnvHash> voiceTypes)
+        public void ReadXml(XmlReader reader)
+        {
+            DialogueEvent = new FnvHash();
+            DialogueEvent.ReadXml(reader, "dialogueEvent");
+            VoiceType = new FnvHash();
+            VoiceType.ReadXml(reader, "voiceType");
+            VoiceId = new FnvHash();
+            VoiceId.ReadXml(reader, "voiceId");
+
+            u0 = byte.Parse(reader["u0"]);
+            u1 = byte.Parse(reader["u1"]);
+
+            reader.ReadStartElement("voiceClip");
+        }
+        public void WriteXml(XmlWriter writer)
         {
             writer.WriteStartElement("voiceClip");
             DialogueEvent.WriteXml(writer, "dialogueEvent");
