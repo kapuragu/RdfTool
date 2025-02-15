@@ -1,3 +1,4 @@
+using RdfTool;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,62 +8,61 @@ namespace Dump
     static class DumpInfo
     {
         //tex even though this is specific to the tool, isolating it a bit to its own file to make merging/adapting to other tools easier
-        public static void OutputHashes(string gameId, string fileType, string outputPath, string filePath, RdfTool.RdfFile file)
+        public static void OutputHashes(string gameId, string fileType, string outputPath, string filePath, RdfTool.RadioData2 file)
         {
             //SYNC mgsv-lookup-strings/rdf/rdf_hash_types.json
             //tex you might be thinking, why dont you just read the json? it's a chicken and egg, well not really, you figure out the names and hash types from the tool parameters first then use that to create the json
             var hashSets = new Dictionary<string, HashSet<string>>();
             var hashTypeNames = new Dictionary<string, string>();
             AddHashType("DialogueEvent", "FNV1Hash32", ref hashSets, ref hashTypeNames);
-            AddHashType("VoiceType", "FNV1Hash32", ref hashSets, ref hashTypeNames);
-            AddHashType("LabelName", "StrCode32", ref hashSets, ref hashTypeNames);
-            AddHashType("VoiceEvent", "FNV1Hash32", ref hashSets, ref hashTypeNames);
-            AddHashType("VoiceId", "FNV1Hash32", ref hashSets, ref hashTypeNames);
-            AddHashType("OptionalSetName", "StrCode32", ref hashSets, ref hashTypeNames);
-            AddHashType("VariationSetName", "StrCode32", ref hashSets, ref hashTypeNames);//DEBUGNOW caplag Though there's still the problem of not knowing whether variation set names are FNV132 or StrCode32.
+            AddHashType("Chara", "FNV1Hash32", ref hashSets, ref hashTypeNames);
+            AddHashType("GroupName", "StrCode32", ref hashSets, ref hashTypeNames);
+            AddHashType("Condition", "FNV1Hash32", ref hashSets, ref hashTypeNames);
+            AddHashType("GroupSetName", "StrCode32", ref hashSets, ref hashTypeNames);
+            AddHashType("LabelGroupName", "StrCode32", ref hashSets, ref hashTypeNames);//DEBUGNOW caplag Though there's still the problem of not knowing whether variation set names are FNV132 or StrCode32.
 
-            foreach (var hash in file.DialogueEvents)
+            foreach (var hash in file.dialogueEvents)
             {
                 hashSets["DialogueEvent"].Add(hash.HashValue.ToString());
             }//foreach DialogueEvents
 
-            foreach (var hash in file.VoiceTypes)
+            foreach (var hash in file.charas)
             {
-                hashSets["VoiceType"].Add(hash.HashValue.ToString());
+                hashSets["Chara"].Add(hash.HashValue.ToString());
             }//foreach DialogueEvents
 
-            foreach (var label in file.Labels)
+            foreach (var group2 in file.groups)
             {
-                hashSets["LabelName"].Add(label.LabelName.HashValue.ToString());
-                foreach (var voiceClip in label.VoiceClips)
+                hashSets["GroupName"].Add(group2.Name.HashValue.ToString());
+                foreach (var part in group2.LabelParts)
                 {
-                    if (voiceClip.IsVariationSet==1)
+                    if (part is RadioLabelGroup labelGroup)
                     {
-                        hashSets["VariationSetName"].Add(voiceClip.VoiceId.HashValue.ToString());
+                        hashSets["LabelGroupName"].Add(labelGroup.Name.HashValue.ToString());
                     }
-                    else
+                    else if(part is RadioLabelPart2 labelPart)
                     {
-                    hashSets["VoiceId"].Add(voiceClip.VoiceId.HashValue.ToString());
+                        hashSets["Condition"].Add(labelPart.Condition.HashValue.ToString());
                     }
                 }
             }//foreach labels
 
-            foreach (var optionalSet in file.OptionalSets)
+            foreach (var optionalSet in file.groupSets)
             {
-                hashSets["OptionalSetName"].Add(optionalSet.OptionalSetName.HashValue.ToString());
+                hashSets["GroupSetName"].Add(optionalSet.Name.HashValue.ToString());
                 //DEBUGNOW are these unique to optionalset or are they same as LabelName
-                foreach (var hash in optionalSet.LabelNames)
+                foreach (var hash in optionalSet.GroupNames)
                 {
                     hashSets["LabelName"].Add(hash.HashValue.ToString());
                 }//foreach LabelNames
             }//foreach OptionalSets
 
-            foreach (var variationSet in file.VariationSets)
+            foreach (var labelGroup in file.labelGroups)
             {
-                hashSets["VariationSetName"].Add(variationSet.VariationSetName.HashValue.ToString());
-                foreach (var hash in variationSet.VoiceClips)
+                hashSets["LabelGroupName"].Add(labelGroup.Name.HashValue.ToString());
+                foreach (var hash in labelGroup.LabelParts)
                 {
-                    hashSets["VoiceId"].Add(hash.VoiceId.HashValue.ToString());
+                    hashSets["Condition"].Add(hash.Condition.HashValue.ToString());
                 }//foreach LabelNames
             }//foreach OptionalSets
 
@@ -72,7 +72,6 @@ namespace Dump
                 WriteHashes(kvp.Value, filePath, fileType, hashName, hashTypeNames[hashName], gameId, outputPath);
             }
         }//OutputHashes
-
         private static void AddHashType(string hashName, string hashType, ref Dictionary<string, HashSet<string>> hashSets, ref Dictionary<string, string> hashTypeNames)
         {
             hashSets.Add(hashName, new HashSet<string>());

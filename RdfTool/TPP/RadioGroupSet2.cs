@@ -6,16 +6,16 @@ using System.Collections.Generic;
 
 namespace RdfTool
 {
-    public class RdfOptionalSet
+    public class RadioGroupSet2
     {
-        public FoxHash OptionalSetName { get; set; }
+        public FoxHash Name { get; set; }
 
-        public List<FoxHash> LabelNames = new List<FoxHash>();
+        public List<FoxHash> GroupNames = new List<FoxHash>();
         public void Read(BinaryReader reader, HashManager hashManager, HashIdentifiedDelegate hashIdentifiedCallback)
         {
-            OptionalSetName = new FoxHash();
-            OptionalSetName.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"    SetName: {OptionalSetName.HashValue}");
+            Name = new FoxHash();
+            Name.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
+            Console.WriteLine($"    SetName: {Name.HashValue}");
 
             byte count = reader.ReadByte();
 
@@ -23,54 +23,53 @@ namespace RdfTool
             {
                 FoxHash labelName = new FoxHash();
                 labelName.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-                LabelNames.Add(labelName);
+                GroupNames.Add(labelName);
             }
         }
         public void Write(BinaryWriter writer)
         {
-            OptionalSetName.Write(writer);
-            writer.Write((byte)LabelNames.Count);
-            foreach (FoxHash labelName in LabelNames)
+            Name.Write(writer);
+            writer.Write((byte)GroupNames.Count);
+            foreach (FoxHash labelName in GroupNames)
             {
                 labelName.Write(writer);
             }
         }
         public void ReadXml(XmlReader reader)
         {
-            OptionalSetName = new FoxHash();
-            OptionalSetName.ReadXml(reader, "optionalSetName");
+            Name = new FoxHash();
+            Name.ReadXml(reader, "id");
             bool doNodeLoop = true;
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
-            reader.ReadStartElement("optionalSet");
+            reader.ReadStartElement("groupSet2");
             while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
                         FoxHash label = new FoxHash();
-                        label.ReadXml(reader, "labelName");
-                        LabelNames.Add(label);
-                        reader.ReadStartElement("label");
+                        label.ReadXml(reader, "group2Id");
+                        GroupNames.Add(label);
+                        reader.ReadStartElement("group2Id");
                         Console.WriteLine($"    {label.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
-                        doNodeLoop = false;
-                        reader.Read();
                         return;
                 }
         }
 
         public void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement("optionalSet");
-            OptionalSetName.WriteXml(writer, "optionalSetName");
+            writer.WriteStartElement("groupSet2");
 
-            Console.WriteLine($"    optionalSetName: {OptionalSetName.HashValue}");
+            Name.WriteXml(writer, "id");
 
-            foreach (FoxHash labelName in LabelNames)
+            Console.WriteLine($"    groupSet2: {Name.HashValue}");
+
+            foreach (FoxHash groupName in GroupNames)
             {
-                writer.WriteStartElement("label");
-                labelName.WriteXml(writer, "labelName");
+                writer.WriteStartElement("group2Id");
+                groupName.WriteXml(writer, "group2Id");
                 writer.WriteEndElement();
             }
             writer.WriteEndElement();

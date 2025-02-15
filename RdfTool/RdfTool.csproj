@@ -50,18 +50,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DumpInfo.cs" />
-    <Compile Include="RdfLabelGZ.cs" />
-    <Compile Include="RdfOptionalSetGZ.cs" />
-    <Compile Include="RdfVariationSet.cs" />
-    <Compile Include="RdfOptionalSet.cs" />
+    <Compile Include="GZ\RadioData.cs" />
+    <Compile Include="GZ\RadioGroup.cs" />
+    <Compile Include="GZ\RadioGroupSet.cs" />
+    <Compile Include="TPP\RadioGroupPart.cs" />
+    <Compile Include="TPP\RadioLabelGroup.cs" />
+    <Compile Include="TPP\RadioGroupSet2.cs" />
     <Compile Include="FnvHash.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FoxHash.cs" />
     <Compile Include="HashManager.cs" />
-    <Compile Include="RdfVoiceClipGZ.cs" />
-    <Compile Include="RdfVoiceClip.cs" />
-    <Compile Include="RdfLabel.cs" />
-    <Compile Include="RdfFile.cs" />
+    <Compile Include="GZ\RadioLabelPart.cs" />
+    <Compile Include="TPP\RadioLabelPart2.cs" />
+    <Compile Include="TPP\RadioGroup2.cs" />
+    <Compile Include="TPP\RadioData2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

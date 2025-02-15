@@ -9,6 +9,20 @@ using System.Reflection;
 
 namespace RdfTool
 {
+    public enum Version : byte
+    {
+        TPP = 3,
+        GZ = 1,
+    };
+    public enum RadioType : byte
+    {
+        real_time = 0,
+        espionage = 1,
+        optional = 2,
+        game_over = 3,
+        map = 4,
+        mission_image = 5,
+    };
     internal static class Program
     {
         private const string DefaultHashDumpFileName = "rdf_hash_dump_dictionary.txt";
@@ -90,21 +104,80 @@ namespace RdfTool
                     string fileExtension = Path.GetExtension(rdfPath);
                     if (fileExtension.Equals(".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        RdfFile rdf = ReadFromXml(rdfPath);
-                        WriteToBinary(rdf, Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(rdfPath)) + ".rdf");
-                        CollectUserStrings(rdf, hashManager, UserStrings);
+                        XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
+                        {
+                            IgnoreWhitespace = true
+                        };
+
+                        using (var reader = XmlReader.Create(rdfPath, xmlReaderSettings))
+                        {
+                            reader.Read();
+                            reader.Read();
+                            Version version = (Version)Enum.Parse(typeof(Version), reader["version"]);
+                            if (version == Version.GZ)
+                            {
+                                RadioData rdf = new RadioData();
+                                rdf.ReadXml(reader);
+                                WriteToBinary(rdf, Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(rdfPath)) + ".rdf");
+                                CollectUserStrings(rdf, hashManager, UserStrings);
+                            }
+                            else if (version == Version.TPP)
+                            {
+                                RadioData2 rdf = new RadioData2();
+                                rdf.ReadXml(reader);
+                                WriteToBinary(rdf, Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(rdfPath)) + ".rdf");
+                                CollectUserStrings(rdf, hashManager, UserStrings);
+                            }
+                        }
                     }
                     else if (fileExtension.Equals(".rdf", StringComparison.OrdinalIgnoreCase))
                     {
-                        RdfFile rdf = ReadFromBinary(rdfPath, hashManager);
-                        if (!runSettings.outputHashes)
+                        using (BinaryReader reader = new BinaryReader(new FileStream(rdfPath, FileMode.Open)))
                         {
-                            WriteToXml(rdf, Path.GetFileNameWithoutExtension(rdfPath) + ".rdf.xml");
+                            Version version = (Version)reader.ReadByte();
+                            if (version==Version.GZ)
+                            {
+                                RadioData rdf = new RadioData();
+                                rdf.Read(reader, hashManager);
+                                if (!runSettings.outputHashes)
+                                {
+                                    XmlWriterSettings xmlWriterSettings = new XmlWriterSettings()
+                                    {
+                                        Encoding = Encoding.UTF8,
+                                        Indent = true
+                                    };
+                                    using (var writer = XmlWriter.Create(Path.GetFileNameWithoutExtension(rdfPath) + ".rdf.xml", xmlWriterSettings))
+                                    {
+                                        rdf.WriteXml(writer);
+                                    }
+                                }
+                                else
+                                {
+                                    //Dump.DumpInfo.OutputHashes(runSettings.gameId, fileType, runSettings.outputPath, rdfPath, rdf);
+                                }//if outputhashes
+                            }
+                            else if (version==Version.TPP)
+                            {
+                                RadioData2 rdf = new RadioData2();
+                                rdf.Read(reader, hashManager);
+                                if (!runSettings.outputHashes)
+                                {
+                                    XmlWriterSettings xmlWriterSettings = new XmlWriterSettings()
+                                    {
+                                        Encoding = Encoding.UTF8,
+                                        Indent = true
+                                    };
+                                    using (var writer = XmlWriter.Create(Path.GetFileNameWithoutExtension(rdfPath) + ".rdf.xml", xmlWriterSettings))
+                                    {
+                                        rdf.WriteXml(writer);
+                                    }
+                                }
+                                else
+                                {
+                                    Dump.DumpInfo.OutputHashes(runSettings.gameId, fileType, runSettings.outputPath, rdfPath, rdf);
+                                }//if outputhashes
+                            }
                         }
-                        else
-                        {
-                            Dump.DumpInfo.OutputHashes(runSettings.gameId, fileType, runSettings.outputPath, rdfPath, rdf);
-                        }//if outputhashes
                     }
                     else
                     {
@@ -137,7 +210,14 @@ namespace RdfTool
             }
         }//AddToFiles
 
-        public static void WriteToBinary(RdfFile rdf, string path)
+        public static void WriteToBinary(RadioData rdf, string path)
+        {
+            using (BinaryWriter writer = new BinaryWriter(new FileStream(path, FileMode.Create)))
+            {
+                rdf.Write(writer);
+            }
+        }
+        public static void WriteToBinary(RadioData2 rdf, string path)
         {
             using (BinaryWriter writer = new BinaryWriter(new FileStream(path, FileMode.Create)))
             {
@@ -145,17 +225,7 @@ namespace RdfTool
             }
         }
 
-        public static RdfFile ReadFromBinary(string path, HashManager hashManager)
-        {
-            RdfFile rdf = new RdfFile();
-            using (BinaryReader reader = new BinaryReader(new FileStream(path, FileMode.Open)))
-            {
-                rdf.Read(reader, hashManager);
-            }
-            return rdf;
-        }
-
-        public static void WriteToXml(RdfFile rdf, string path)
+        public static void WriteToXml(RadioData2 rdf, string path)
         {
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings()
             {
@@ -166,21 +236,6 @@ namespace RdfTool
             {
                 rdf.WriteXml(writer);
             }
-        }
-
-        public static RdfFile ReadFromXml(string path)
-        {
-            XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
-            {
-                IgnoreWhitespace = true
-            };
-
-            RdfFile rdf = new RdfFile();
-            using (var reader = XmlReader.Create(path, xmlReaderSettings))
-            {
-                rdf.ReadXml(reader);
-            }
-            return rdf;
         }
 
         /// <summary>
@@ -256,54 +311,78 @@ namespace RdfTool
                 }
             }
         }
-        public static void CollectUserStrings(RdfFile rdf, HashManager hashManager, List<string> UserStrings)
+        public static void CollectUserStrings(RadioData rdf, HashManager hashManager, List<string> UserStrings)
         {
-            foreach (var dialogueEvent in rdf.DialogueEvents) // Analyze hashes
+            foreach (var group in rdf.groups) // Analyze hashes
+            {
+                if (IsUserString(group.Name.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                    UserStrings.Add(group.Name.StringLiteral);
+
+                foreach (var part in group.LabelParts)
+                {
+                    if (IsUserString(part.Condition.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                        UserStrings.Add(part.Condition.StringLiteral);
+                }
+            }
+            foreach (var groupSet in rdf.groupSets) // Analyze hashes
+            {
+                if (IsUserString(groupSet.Name.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                    UserStrings.Add(groupSet.Name.StringLiteral);
+                foreach (var groupName in groupSet.GroupNames)
+                {
+                    if (IsUserString(groupName.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
+                        UserStrings.Add(groupName.StringLiteral);
+                }
+            }
+        }
+        public static void CollectUserStrings(RadioData2 rdf, HashManager hashManager, List<string> UserStrings)
+        {
+            foreach (var dialogueEvent in rdf.dialogueEvents) // Analyze hashes
             {
                 if (IsUserString(dialogueEvent.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
                     UserStrings.Add(dialogueEvent.StringLiteral);
             }
-            foreach (var voiceType in rdf.VoiceTypes) // Analyze hashes
+            foreach (var voiceType in rdf.charas) // Analyze hashes
             {
                 if (IsUserString(voiceType.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
                     UserStrings.Add(voiceType.StringLiteral);
             }
-            foreach (var label in rdf.Labels) // Analyze hashes
+            foreach (var label in rdf.groups) // Analyze hashes
             {
-                if (IsUserString(label.LabelName.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
-                    UserStrings.Add(label.LabelName.StringLiteral);
-                foreach (var voiceClip in label.VoiceClips)
+                if (IsUserString(label.Name.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                    UserStrings.Add(label.Name.StringLiteral);
+                foreach (var part in label.LabelParts)
                 {
-                    if (voiceClip.IsVariationSet == 1)
+                    if (part is RadioLabelPart2 labelPart2)
                     {
-                        if (IsUserString(voiceClip.VoiceId.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
-                            UserStrings.Add(voiceClip.VoiceId.StringLiteral);
+                        if (IsUserString(labelPart2.Condition.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                            UserStrings.Add(labelPart2.Condition.StringLiteral);
                     }
-                    else
+                    else if (part is RadioLabelGroup labelGroup)
                     {
-                        if (IsUserString(voiceClip.VoiceId.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
-                            UserStrings.Add(voiceClip.VoiceId.StringLiteral);
+                        if (IsUserString(labelGroup.Name.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
+                            UserStrings.Add(labelGroup.Name.StringLiteral);
                     }
                 }
             }
-            foreach (var optionalSet in rdf.OptionalSets) // Analyze hashes
+            foreach (var optionalSet in rdf.groupSets) // Analyze hashes
             {
-                if (IsUserString(optionalSet.OptionalSetName.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
-                    UserStrings.Add(optionalSet.OptionalSetName.StringLiteral);
-                foreach (var optionalLabel in optionalSet.LabelNames)
+                if (IsUserString(optionalSet.Name.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                    UserStrings.Add(optionalSet.Name.StringLiteral);
+                foreach (var optionalLabel in optionalSet.GroupNames)
                 {
                     if (IsUserString(optionalLabel.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
                         UserStrings.Add(optionalLabel.StringLiteral);
                 }
             }
-            foreach (var variationSet in rdf.VariationSets) // Analyze hashes
+            foreach (var variationSet in rdf.labelGroups) // Analyze hashes
             {
-                if (IsUserString(variationSet.VariationSetName.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
-                    UserStrings.Add(variationSet.VariationSetName.StringLiteral);
-                foreach (var voiceClip in variationSet.VoiceClips)
+                if (IsUserString(variationSet.Name.StringLiteral, UserStrings, hashManager.StrCode32LookupTable))
+                    UserStrings.Add(variationSet.Name.StringLiteral);
+                foreach (var voiceClip in variationSet.LabelParts)
                 {
-                    if (IsUserString(voiceClip.VoiceId.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
-                        UserStrings.Add(voiceClip.VoiceId.StringLiteral);
+                    if (IsUserString(voiceClip.Condition.StringLiteral, UserStrings, hashManager.Fnv1LookupTable))
+                        UserStrings.Add(voiceClip.Condition.StringLiteral);
                 }
             }
         }

@@ -6,44 +6,43 @@ using System.Collections.Generic;
 
 namespace RdfTool
 {
-    public class RdfOptionalSetGZ
+    public class RadioGroupSet
     {
-        public FoxHash OptionalSetName { get; set; }
+        public FoxHash Name { get; set; }
 
-        public List<FoxHash> LabelNames = new List<FoxHash>();
+        public List<FoxHash> GroupNames = new List<FoxHash>();
         public void ReadXml(XmlReader reader)
         {
-            OptionalSetName = new FoxHash();
-            OptionalSetName.ReadXml(reader, "optionalSetName");
+            Name = new FoxHash();
+            Name.ReadXml(reader, "id");
             bool doNodeLoop = true;
             if (reader.IsEmptyElement)
                 doNodeLoop = false;
-            reader.ReadStartElement("optionalSet");
+            reader.ReadStartElement("groupSet");
             while (doNodeLoop)
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
                         FoxHash label = new FoxHash();
-                        label.ReadXml(reader, "labelName");
-                        LabelNames.Add(label);
-                        reader.ReadStartElement("label");
+                        label.ReadXml(reader, "groupId");
+                        GroupNames.Add(label);
+                        reader.ReadStartElement("groupId");
                         Console.WriteLine($"    {label.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
                         doNodeLoop = false;
-                        reader.Read();
                         return;
                 }
         }
 
         public void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement("optionalSet");
-            OptionalSetName.WriteXml(writer, "optionalSetName");
-            foreach (FoxHash labelName in LabelNames)
+            writer.WriteStartElement("groupSet");
+            Name.WriteXml(writer, "id");
+            foreach (FoxHash groupName in GroupNames)
             {
-                writer.WriteStartElement("label");
-                labelName.WriteXml(writer, "labelName");
+                writer.WriteStartElement("groupId");
+                groupName.WriteXml(writer, "groupId");
                 writer.WriteEndElement();
             }
             writer.WriteEndElement();
