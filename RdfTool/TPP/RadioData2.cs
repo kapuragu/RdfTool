@@ -178,6 +178,47 @@ namespace RdfTool
                         groupSet.ReadXml(reader);
                         groupSets.Add(groupSet);
                     }
+                    else if (reader.Name == "labelGroup")
+                    {
+                        Console.WriteLine("labelGroup");
+                        var isEmpty = reader.IsEmptyElement;
+                        RadioLabelGroup labelGroup = new RadioLabelGroup();
+                        labelGroup.Name = new FoxHash();
+                        labelGroup.Name.ReadXml(reader, "id");
+
+                        bool labelGroupDoAdd = true;
+                        if (isEmpty)
+                        {
+                            reader.ReadStartElement("labelGroup");
+                            labelGroupDoAdd = false;
+                        }
+                        else
+                        {
+                            foreach (RadioLabelGroup _labelGroup in labelGroups)
+                                if (_labelGroup.Name.HashValue == labelGroup.Name.HashValue)
+                                {
+                                    labelGroupDoAdd = false;
+                                    labelGroup = _labelGroup;
+                                }
+
+                            reader.ReadStartElement("labelGroup");
+                            while (reader.Name == "labelPart")
+                            {
+                                Console.WriteLine("     labelPart");
+                                RadioLabelPart2 labelPart = new RadioLabelPart2();
+                                labelPart.ReadXml(reader, dialogueEvents, charas);
+
+                                if (labelGroupDoAdd)
+                                    labelGroup.LabelParts.Add(labelPart);
+                            }
+
+                            if (labelGroupDoAdd)
+                            {
+                                labelGroups.Add(labelGroup);
+                            }
+                            reader.ReadEndElement();
+                        }
+                    }
                 }
             }
         }
@@ -249,6 +290,53 @@ namespace RdfTool
             foreach (RadioGroupSet2 groupSet in groupSets)
             {
                 groupSet.WriteXml(writer);
+            }
+
+            foreach (RadioLabelGroup labelGroup in labelGroups)
+            {
+                bool isUsed = false;
+                foreach (RadioGroup2 group in groups)
+                {
+                    foreach (RadioGroupPart part in group.LabelParts)
+                    {
+                        if (part is RadioLabelGroup _labelGroup)
+                        {
+                            if (labelGroup.Name.HashValue == _labelGroup.Name.HashValue)
+                            {
+                                isUsed = true;
+                                break;
+                            }
+                        }
+                        if (isUsed)
+                            break;
+                    }
+                    if (isUsed)
+                        break;
+                }
+                if (isUsed)
+                    continue;
+
+                labelGroup.WriteXml(writer); 
+                for (int i = 0; i < labelGroup.LabelParts.Count; i++)
+                {
+                    RadioLabelPart2 labelGroupPart = labelGroup.LabelParts[i];
+
+                    labelGroupPart.WriteXml(writer);
+
+                    if (dialogueEvents.Count > labelGroupPart.DialogueEventIndex && labelGroupPart.DialogueEventIndex >= 0)
+                        dialogueEvents[labelGroupPart.DialogueEventIndex].WriteXml(writer, "dialogueEvent");
+                    else
+                        writer.WriteAttributeString("dialogueEvent", "Invalid");
+
+                    if (charas.Count > labelGroupPart.CharaIndex && labelGroupPart.CharaIndex >= 0)
+                        charas[labelGroupPart.CharaIndex].WriteXml(writer, "chara");
+                    else
+                        writer.WriteAttributeString("chara", "Invalid");
+
+                    writer.WriteAttributeString("intervalNextLabelId", labelGroupPart.IntervalNextLabelId.ToString(CultureInfo.InvariantCulture));
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
             }
 
             writer.WriteEndDocument();
