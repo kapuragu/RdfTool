@@ -28,11 +28,14 @@ namespace RdfTool
 
             byte charasCount = reader.ReadByte();
 
-            Console.WriteLine($"Dialogue events count: {dialogueEventCount}");
-            Console.WriteLine($"Labels count: {groupCount}");
-            Console.WriteLine($"Optional sets count: {groupSetCount}");
-            Console.WriteLine($"Variation sets count: {labelGroupCount}");
-            Console.WriteLine($"Voice types count: {charasCount}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"Dialogue events count: {dialogueEventCount}");
+                Console.WriteLine($"Labels count: {groupCount}");
+                Console.WriteLine($"Optional sets count: {groupSetCount}");
+                Console.WriteLine($"Variation sets count: {labelGroupCount}");
+                Console.WriteLine($"Voice types count: {charasCount}");
+            }
 
             dialogueEvents.Capacity = dialogueEventCount;
 
@@ -46,7 +49,8 @@ namespace RdfTool
             {
                 FnvHash dialogueEvent = new FnvHash();
                 dialogueEvent.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
-                Console.WriteLine($"Dialogue event: {dialogueEvent.HashValue}");
+                if(Program.Verbose)
+                    Console.WriteLine($"Dialogue event: {dialogueEvent.HashValue}");
                 dialogueEvents.Insert(i,dialogueEvent);
             }
 
@@ -54,7 +58,8 @@ namespace RdfTool
             {
                 FnvHash voiceType = new FnvHash();
                 voiceType.Read(reader, hashManager.Fnv1LookupTable, hashManager.OnHashIdentified);
-                Console.WriteLine($"Voice type: {voiceType.HashValue}");
+                if (Program.Verbose)
+                    Console.WriteLine($"Voice type: {voiceType.HashValue}");
                 charas.Insert(i,voiceType);
             }
 
@@ -118,14 +123,16 @@ namespace RdfTool
                         {
                             if (reader.Name == "labelPart")
                             {
-                                Console.WriteLine("labelPart");
+                                if (Program.Verbose)
+                                    Console.WriteLine("labelPart");
                                 RadioLabelPart2 labelPart = new RadioLabelPart2();
                                 labelPart.ReadXml(reader,dialogueEvents,charas);
                                 radioGroup.LabelParts.Add(labelPart);
                             }
                             else if (reader.Name == "labelGroup")
                             {
-                                Console.WriteLine("labelGroup");
+                                if (Program.Verbose)
+                                    Console.WriteLine("labelGroup");
                                 var isEmpty = reader.IsEmptyElement;
                                 RadioLabelGroup labelGroup = new RadioLabelGroup();
                                 labelGroup.ReadXml(reader);
@@ -148,7 +155,8 @@ namespace RdfTool
                                     reader.ReadStartElement("labelGroup");
                                     while (reader.Name == "labelPart")
                                     {
-                                        Console.WriteLine("     labelPart");
+                                        if (Program.Verbose)
+                                            Console.WriteLine("     labelPart");
                                         RadioLabelPart2 labelPart = new RadioLabelPart2();
                                         labelPart.ReadXml(reader, dialogueEvents, charas);
 
@@ -162,7 +170,8 @@ namespace RdfTool
                                     }
                                     reader.ReadEndElement();
                                 }
-                                Console.WriteLine($"    labelGroupDoAdd: {labelGroupDoAdd}");
+                                if (Program.Verbose)
+                                    Console.WriteLine($"    labelGroupDoAdd: {labelGroupDoAdd}");
                                 radioGroup.LabelParts.Add(labelGroup);
                             }
                             else
@@ -180,7 +189,8 @@ namespace RdfTool
                     }
                     else if (reader.Name == "labelGroup")
                     {
-                        Console.WriteLine("labelGroup");
+                        if (Program.Verbose)
+                            Console.WriteLine("labelGroup");
                         var isEmpty = reader.IsEmptyElement;
                         RadioLabelGroup labelGroup = new RadioLabelGroup();
                         labelGroup.Name = new FoxHash();
@@ -204,7 +214,8 @@ namespace RdfTool
                             reader.ReadStartElement("labelGroup");
                             while (reader.Name == "labelPart")
                             {
-                                Console.WriteLine("     labelPart");
+                                if (Program.Verbose)
+                                    Console.WriteLine("     labelPart");
                                 RadioLabelPart2 labelPart = new RadioLabelPart2();
                                 labelPart.ReadXml(reader, dialogueEvents, charas);
 

@@ -15,7 +15,8 @@ namespace RdfTool
         {
             Name = new FoxHash();
             Name.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"    SetName: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    SetName: {Name.HashValue}");
 
             byte count = reader.ReadByte();
 
@@ -51,7 +52,8 @@ namespace RdfTool
                         label.ReadXml(reader, "group2Id");
                         GroupNames.Add(label);
                         reader.ReadStartElement("group2Id");
-                        Console.WriteLine($"    {label.HashValue}");
+                        if (Program.Verbose)
+                            Console.WriteLine($"    {label.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
                         return;
@@ -64,7 +66,8 @@ namespace RdfTool
 
             Name.WriteXml(writer, "id");
 
-            Console.WriteLine($"    groupSet2: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    groupSet2: {Name.HashValue}");
 
             foreach (FoxHash groupName in GroupNames)
             {

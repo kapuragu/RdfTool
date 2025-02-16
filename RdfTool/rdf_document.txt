@@ -1,0 +1,78 @@
+﻿TPP:
+
+group2:
+
+id: StrCode32 hash, the group's name. Called in Lua with TppRadio.Play("nameAsString").
+FLAGS: unknown 4 bit flags, with an unused 5th bit. Ex: 0, 14.
+radioType: radio noise type. "real_time", "optional", "espionage", "map", "mission_image".
+
+phase: phases in which this is allowed to play in.
+
+info:
+
+invalidTimeId: index into a time table of a cooldown timer for the group. 
+0 = 0 seconds,
+1 = 1 second,
+2 = 5 seconds,
+3 = 10 seconds,
+4 = 15 seconds,
+5 = 20 seconds,
+6 = 25 seconds,
+7 = 30 seconds.
+8 and beyond = 0 seconds.
+
+u2: unknown 2 bits. Seemingly unused, but are written variably.
+
+priorityId: index into a priority table. Groups with higher priority won't be interrupted.
+0 = 0,
+1 = 30,
+2 = 40,
+3 = 50,
+4 = 60,
+5 = 70,
+6 = 80,
+7 = 90,
+8 = 98,
+9 = 255
+1 0 =25,
+11 and beyond = 255
+
+playType: enum of a play type that decides how many of the labelParts to play and in what order.
+PlayType_StepRandom = 0, //InitPlayIndex if label count!=1 (something) else 0
+PlayType_StepRandomNoRepeatLast = 1, //play voices one at a time
+PlayType_StepSequenceThenRepeatLast = 2, //during step sequence mode, after playing last step, repeat using last step
+PlayType_StepRandomCanRepeatLast = 3, //InitPlayIndex if label count<2 (something)
+PlayType_Sequence = 4, //play all parts in sequence at once, most common one
+PlayType_StepSequence = 5, //play step, in sequence? used lots in 2 or 1-long groups so hard to confirm
+PlayType_6 = 8,//gz 162692253 e0010_rtrg0710
+PlayType_7 = 7,
+PlayType_StepThenRepeatIds = 8, //play step sequence then random repeatStartId to repeatEndId
+
+startId and endId: index of a labelPart, used when playTime is 8 and possibly other unknown ones.
+
+labelPart:
+
+condition: FNV132 hash. The "condition" state name in the Dynamic Dialogue Event.
+dialogueEvent: FNV132 hash. The name of the Dynamic Dialogue Event.
+chara: FNV132 hash. The name of the "chara" state name in the Dynamic Dialogue Event.
+intervalNextLabelId: index into time table of delay until the next labelPart plays.
+0 = 0.400 seconds,
+1 = 0.100 seconds,
+2 = 0.200 seconds,
+3 = 0.300 seconds,
+4 = 0.600 seconds,
+5 = 0.750 seconds,
+6 = 0.900 seconds,
+7 = 1.100 seconds,
+8 = 1.500 seconds,
+9 = 2.000 seconds,
+10 = 2.500 seconds,
+11 = 3.000 seconds,
+12 = 0.500 seconds,
+13 = 4.000 seconds,
+14 = 5.000 seconds,
+15 = 6.000 seconds.
+
+labelGroup: a container of labelParts, played in order.
+id: name of the labelGroup. Unknown if StrCode32, but treated here as such.
+intervalNextLabelId: ditto.

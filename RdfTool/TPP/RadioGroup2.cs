@@ -30,15 +30,18 @@ namespace RdfTool
         {
             Name = new FoxHash();
             Name.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"Label name: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"Label name: {Name.HashValue}");
 
             byte[] flags = reader.ReadBytes(4);
-            Console.WriteLine($"    flags: {flags[0]} {flags[1]} {flags[2]} {flags[3]}");
+            if (Program.Verbose)
+                Console.WriteLine($"    flags: {flags[0]} {flags[1]} {flags[2]} {flags[3]}");
 
             //byte 0
             FLAGS = (byte)(flags[0] & 0x1F ); // 5 bits
             RadioType = (RadioType)(flags[0] >> 5); // 3 bits
-            Console.WriteLine($"    FLAGS: {FLAGS} RadioType {RadioType}");
+            if (Program.Verbose)
+                Console.WriteLine($"    FLAGS: {FLAGS} RadioType {RadioType}");
 
             //byte 1
             IsSneak = (flags[1] & 1)==1; // 5 bits
@@ -47,26 +50,38 @@ namespace RdfTool
             IsClearing = (flags[1] & 8) == 8;
             IsAlert = (flags[1] & 0x10) == 0x10;
             InvalidTimeId = (byte)(flags[1] >> 5); // 3 bits
-            Console.WriteLine($"    Phase: {IsSneak} {IsCaution} {IsEvasion} {IsClearing} {IsAlert}");
-            Console.WriteLine($"    InvalidTimeId {InvalidTimeId}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"    Phase: {IsSneak} {IsCaution} {IsEvasion} {IsClearing} {IsAlert}");
+                Console.WriteLine($"    InvalidTimeId {InvalidTimeId}");
+            }
 
             //byte 2
             var voiceClipCount = flags[2] & 0x3F; // 6 bits
             Unknown2 = (byte)(flags[2] >> 6); // 2 bits
-            Console.WriteLine($"    voiceClipCount {voiceClipCount}");
-            Console.WriteLine($"    Unknown2 {Unknown2}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"    voiceClipCount {voiceClipCount}");
+                Console.WriteLine($"    Unknown2 {Unknown2}");
+            }
 
             //byte 3
             PriorityId = (byte)(flags[3] & 0x0F); // 4 bits
             PlayType = (byte)(flags[3] >> 4); // 4 bits
-            Console.WriteLine($"    PriorityId {PriorityId}");
-            Console.WriteLine($"    PlayType {PlayType}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"    PriorityId {PriorityId}");
+                Console.WriteLine($"    PlayType {PlayType}");
+            }
 
             //byte 4 and 5
             StartId = reader.ReadByte();
             EndId = reader.ReadByte();
-            Console.WriteLine($"    StartId {StartId}");
-            Console.WriteLine($"    EndId {EndId}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"    StartId {StartId}");
+                Console.WriteLine($"    EndId {EndId}");
+            }
 
             for (int i = 0; i < voiceClipCount; i++)
             {
@@ -125,7 +140,8 @@ namespace RdfTool
             FLAGS = byte.Parse(reader["FLAGS"]);
 
             RadioType = (RadioType)Enum.Parse(RadioType.GetType(), reader["radioType"]);
-            Console.WriteLine($"id: {Name.HashValue}, FLAGS: {FLAGS}, RadioType: {RadioType}");
+            if (Program.Verbose)
+                Console.WriteLine($"id: {Name.HashValue}, FLAGS: {FLAGS}, RadioType: {RadioType}");
 
             reader.ReadStartElement("group2");
 
@@ -134,17 +150,20 @@ namespace RdfTool
             IsEvasion = bool.Parse(reader["evasion"]);
             IsClearing = bool.Parse(reader["clearing"]);
             IsAlert = bool.Parse(reader["alert"]);
-            Console.WriteLine($"IsSneak: {IsSneak}, IsCaution: {IsCaution}, IsEvasion: {IsEvasion}, IsClearing: {IsClearing}, IsAlert: {IsAlert}");
+            if (Program.Verbose)
+                Console.WriteLine($"IsSneak: {IsSneak}, IsCaution: {IsCaution}, IsEvasion: {IsEvasion}, IsClearing: {IsClearing}, IsAlert: {IsAlert}");
             reader.ReadStartElement("phase");
 
             InvalidTimeId = byte.Parse(reader["invalidTimeId"]);
             Unknown2 = byte.Parse(reader["u2"]);
             PriorityId = byte.Parse(reader["priorityId"]);
-            Console.WriteLine($"InvalidTimeId: {InvalidTimeId}, Unknown2: {Unknown2}, PriorityId: {PriorityId}");
+            if (Program.Verbose)
+                Console.WriteLine($"InvalidTimeId: {InvalidTimeId}, Unknown2: {Unknown2}, PriorityId: {PriorityId}");
             PlayType = byte.Parse(reader["playType"]);
             StartId = byte.Parse(reader["startId"]);
             EndId = byte.Parse(reader["endId"]);
-            Console.WriteLine($"PlayType: {PlayType}, StartId: {StartId}, EndId: {EndId}");
+            if (Program.Verbose)
+                Console.WriteLine($"PlayType: {PlayType}, StartId: {StartId}, EndId: {EndId}");
             reader.ReadStartElement("info");
         }
         public void WriteXml(XmlWriter writer)
@@ -172,7 +191,8 @@ namespace RdfTool
             writer.WriteAttributeString("endId", EndId.ToString(CultureInfo.InvariantCulture));
             writer.WriteEndElement();
 
-            Console.WriteLine($"Label name: {Name.StringLiteral}");
+            if (Program.Verbose)
+                Console.WriteLine($"Label name: {Name.StringLiteral}");
         }
         public XmlSchema GetSchema() { return null; }
     }

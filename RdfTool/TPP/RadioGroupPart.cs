@@ -20,9 +20,12 @@ namespace RdfTool
 
             IntervalNextLabelId = (byte)(reader.ReadByte() >> 4);  //max 0x0F 15
 
-            Console.WriteLine($"         DialogueEventIndex: {DialogueEventIndex}");
-            Console.WriteLine($"         voiceTypeIndex: {CharaIndex}");
-            Console.WriteLine($"         IntervalNextLabelId: {IntervalNextLabelId}");
+            if (Program.Verbose)
+            {
+                Console.WriteLine($"         DialogueEventIndex: {DialogueEventIndex}");
+                Console.WriteLine($"         voiceTypeIndex: {CharaIndex}");
+                Console.WriteLine($"         IntervalNextLabelId: {IntervalNextLabelId}");
+            }
         }
         public virtual void Write(BinaryWriter writer)
         {

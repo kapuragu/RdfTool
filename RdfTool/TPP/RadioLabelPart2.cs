@@ -17,7 +17,8 @@ namespace RdfTool
         {
             Condition = new FnvHash(); //TODO: could be a variationset name, which could be a strcode32
             Condition.Read(reader, hashManager.Fnv1LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"    Sbp VoiceClip: {Condition.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    Sbp VoiceClip: {Condition.HashValue}");
 
             base.Read(reader, hashManager, hashIdentifiedCallback);
         }
@@ -33,7 +34,8 @@ namespace RdfTool
         {
             Condition = new FnvHash();
             Condition.ReadXml(reader, "condition");
-            Console.WriteLine($"    Condition: {Condition.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    Condition: {Condition.HashValue}");
 
             FnvHash dialogueEvent = new FnvHash();
             dialogueEvent.ReadXml(reader, "dialogueEvent");
@@ -61,7 +63,8 @@ namespace RdfTool
                     DialogueEventIndex = (sbyte)dialogueEvents.IndexOf(dialogueEvent);
                 }
             }
-            Console.WriteLine($"    DialogueEventIndex: {DialogueEventIndex}");
+            if (Program.Verbose)
+                Console.WriteLine($"    DialogueEventIndex: {DialogueEventIndex}");
 
             bool charaDoAdd = true;
             if (reader["chara"] == "Invalid")
@@ -82,10 +85,12 @@ namespace RdfTool
                     CharaIndex = (sbyte)charas.IndexOf(chara);
                 }
             }
-            Console.WriteLine($"    CharaIndex: {CharaIndex}");
+            if (Program.Verbose)
+                Console.WriteLine($"    CharaIndex: {CharaIndex}");
 
             IntervalNextLabelId = byte.Parse(reader["intervalNextLabelId"]);
-            Console.WriteLine($"    IntervalNextLabelId: {IntervalNextLabelId}");
+            if (Program.Verbose)
+                Console.WriteLine($"    IntervalNextLabelId: {IntervalNextLabelId}");
             reader.ReadStartElement("labelPart");
         }
 
@@ -94,7 +99,8 @@ namespace RdfTool
             writer.WriteStartElement("labelPart");
             Condition.WriteXml(writer, "condition");
 
-            Console.WriteLine($"    Condition: {Condition.StringLiteral}");
+            if (Program.Verbose)
+                Console.WriteLine($"    Condition: {Condition.StringLiteral}");
         }
 
         public XmlSchema GetSchema() {return null;}

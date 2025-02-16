@@ -15,7 +15,8 @@ namespace RdfTool
         {
             Name = new FoxHash(); //TODO assumption that it's strcode32, not a single one's been unhashed
             Name.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"    SetName: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    SetName: {Name.HashValue}");
 
             base.Read(reader, hashManager, hashIdentifiedCallback);
         }
@@ -23,7 +24,8 @@ namespace RdfTool
         {
             Name = new FoxHash(); //TODO assumption that it's strcode32, not a single one's been unhashed
             Name.Read(reader, hashManager.StrCode32LookupTable, hashIdentifiedCallback);
-            Console.WriteLine($"    SetName: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"    SetName: {Name.HashValue}");
 
             byte count = reader.ReadByte();
 
@@ -45,9 +47,11 @@ namespace RdfTool
         public void WriteGroup(BinaryWriter writer)
         {
             Name.Write(writer);
-            Console.WriteLine($"@{writer.BaseStream.Position} Name: {Name.HashValue}");
+            if (Program.Verbose)
+                Console.WriteLine($"@{writer.BaseStream.Position} Name: {Name.HashValue}");
             writer.Write((byte)LabelParts.Count);
-            Console.WriteLine($"@{writer.BaseStream.Position} LabelParts.Count: {LabelParts.Count}");
+            if (Program.Verbose)
+                Console.WriteLine($"@{writer.BaseStream.Position} LabelParts.Count: {LabelParts.Count}");
             foreach (RadioLabelPart2 voiceClip in LabelParts)
             {
                 voiceClip.Write(writer);
@@ -58,7 +62,8 @@ namespace RdfTool
             Name = new FoxHash();
             Name.ReadXml(reader, "id");
             IntervalNextLabelId = byte.Parse(reader["intervalNextLabelId"]);
-            Console.WriteLine($"    labelGroup id: {Name.HashValue}, IntervalNextLabelId: {IntervalNextLabelId}");
+            if (Program.Verbose)
+                Console.WriteLine($"    labelGroup id: {Name.HashValue}, IntervalNextLabelId: {IntervalNextLabelId}");
         }
 
         public override void WriteXml(XmlWriter writer)

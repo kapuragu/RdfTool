@@ -34,9 +34,16 @@ namespace RdfTool
             public string gameId = "TPP";
             public string outputPath = @"D:\Github\mgsv-lookup-strings";
         }//RunSettings
+        public static bool Verbose;
 
         private static void Main(string[] args)
         {
+            foreach (string arg in args)
+                if (arg.ToLower() == "-verbose" || arg.ToLower() == "-v")
+                {
+                    Verbose = true;
+                }
+
             var hashManager = new HashManager();
 
             // Multi-Dictionary Reading!!
@@ -106,7 +113,8 @@ namespace RdfTool
                     {
                         XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
                         {
-                            IgnoreWhitespace = true
+                            IgnoreWhitespace = true,
+                            IgnoreComments=true,
                         };
 
                         using (var reader = XmlReader.Create(rdfPath, xmlReaderSettings))
@@ -184,6 +192,7 @@ namespace RdfTool
                         Console.WriteLine($"Unrecognized input type: {fileExtension}");
                     }
                 }
+                
             }
 
             // Write hash matches output

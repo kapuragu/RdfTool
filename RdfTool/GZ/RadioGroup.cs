@@ -122,7 +122,8 @@ namespace RdfTool
                     RadioLabelPart labelPart = new RadioLabelPart();
                     labelPart.ReadXml(reader);
                     LabelParts.Add(labelPart);
-                    Console.WriteLine($"    {labelPart.Condition.HashValue}");
+                    if(Program.Verbose)
+                        Console.WriteLine($"    {labelPart.Condition.HashValue}");
                 }
                 else
                 {

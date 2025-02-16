@@ -27,7 +27,8 @@ namespace RdfTool
                         label.ReadXml(reader, "groupId");
                         GroupNames.Add(label);
                         reader.ReadStartElement("groupId");
-                        Console.WriteLine($"    {label.HashValue}");
+                        if (Program.Verbose)
+                            Console.WriteLine($"    {label.HashValue}");
                         continue;
                     case XmlNodeType.EndElement:
                         doNodeLoop = false;
