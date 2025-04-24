@@ -3,3 +3,7 @@ huey
 ishmael
 miller
 ocelot
+snak
+hideo
+intelmem
+miller
